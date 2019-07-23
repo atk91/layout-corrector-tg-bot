@@ -180,11 +180,17 @@ fn read_token(filename: &str) -> Result<String, Box<dyn Error>> {
     Ok(buf)
 }
 
+fn usage(exec_name: &str) {
+    println!("Usage: {} words_file token_file", exec_name);
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
-    let (words_filename, token_filename) = (
-        std::env::args().nth(1).unwrap(),
-        std::env::args().nth(2).unwrap(),
-    );
+    let argv: Vec<_> = std::env::args().collect();
+    if argv.len() != 3 {
+        usage(&argv[0]);
+        std::process::exit(1);
+    }
+    let (words_filename, token_filename) = (&argv[1], &argv[2]);
     let words = build_words(&*words_filename)?;
     let token = read_token(&*token_filename)?;
     println!("words array built!");
