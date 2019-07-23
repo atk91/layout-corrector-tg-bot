@@ -1,0 +1,12 @@
+[package]
+name = "layout-corrector"
+version = "0.1.0"
+authors = ["Anton K <xecu91 at gmail com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+reqwest = "0.9.18"
+serde = "1.0.97"
+serde_json = "1.0"
