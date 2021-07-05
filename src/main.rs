@@ -101,7 +101,7 @@ fn log_updates(updates: &Vec<Update>) {
 }
 
 fn reply_to_message(chat_id: &str, message_id: &str, text: &str, token: &str) {
-    reqwest::Client::new()
+    reqwest::blocking::Client::new()
         .post(&*format!(
             "https://api.telegram.org/bot{}/sendMessage",
             token
@@ -120,7 +120,7 @@ fn get_available_updates(
     last_confirmed: &i64,
 ) -> Result<serde_json::Value, Box<dyn Error>> {
     let updates_url = &*format!("https://api.telegram.org/bot{}/getUpdates", token);
-    let updates = reqwest::Client::new()
+    let updates = reqwest::blocking::Client::new()
         .post(updates_url)
         .form(&[("offset", *last_confirmed + 1)])
         .send()?
@@ -150,7 +150,7 @@ fn get_and_process_updates(
         let chat_id = u.message.as_ref().map(|x| x.chat.id);
         let text = u.message.and_then(|x| x.text.map(|y| y.to_lowercase()));
         let ratio = text.as_ref().map(|x| get_russians_ratio(&*x, &words));
-        let threshold = 0.4;
+        let threshold = 0.5;
         if ratio.unwrap_or(-1.0) > threshold {
             let translated = fix_layout(&*text.unwrap().to_lowercase());
             let message_id = message_id.unwrap();
@@ -170,7 +170,11 @@ fn build_words(filename: &str) -> Result<HashSet<String>, Box<dyn Error>> {
     let mut file = File::open(filename)?;
     let mut buf = String::new();
     file.read_to_string(&mut buf)?;
-    Ok(HashSet::from_iter(buf.split("\n").map(|s| String::from(s))))
+    Ok(HashSet::from_iter(
+        buf.split("\n")
+            .filter(|s| !s.is_empty())
+            .map(|s| String::from(s)),
+    ))
 }
 
 fn read_token(filename: &str) -> Result<String, Box<dyn Error>> {
